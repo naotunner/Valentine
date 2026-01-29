@@ -88,12 +88,19 @@
       pointer-events:none;
       z-index:5;
     }
+
+    #soundFixBtn{
+      display:none;
+      margin-top:12px;
+      font-size:16px;
+      padding:10px 14px;
+    }
   </style>
 </head>
 
 <body>
-  <!-- Make sure your repo has: lover.mp3 (exactly) -->
-  <audio id="loveSong" src="lover.mp3" preload="auto" loop></audio>
+  <!-- IMPORTANT: file must be exactly "lover.mp3" in the same folder as index.html -->
+  <audio id="loveSong" src="lover.mp3" preload="auto" loop playsinline></audio>
 
   <!-- Confetti -->
   <canvas id="confetti"></canvas>
@@ -116,8 +123,8 @@
 
     <p id="message"></p>
 
-    <!-- Hidden “tap to enable sound” fallback (shows only if needed) -->
-    <button id="soundFixBtn" style="display:none; margin-top:12px;">Tap to play music 🎶</button>
+    <!-- Fallback button if iPhone blocks audio -->
+    <button id="soundFixBtn">Tap to play music 🎶</button>
   </div>
 
   <script>
@@ -126,6 +133,7 @@
     const maybeBtn = document.getElementById("maybeButton");
     const question = document.getElementById("question");
     const message  = document.getElementById("message");
+
     const song     = document.getElementById("loveSong");
     const soundFix = document.getElementById("soundFixBtn");
 
@@ -133,11 +141,57 @@
     let maybeYes = false;
     let celebrated = false;
 
+    // ---------- AUDIO UNLOCK (fixes iPhone/Safari) ----------
+    let audioUnlocked = false;
+
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      audioUnlocked = true;
+
+      // Prime audio on mobile by briefly playing muted
+      song.muted = true;
+      const p = song.play();
+      if (p && typeof p.then === "function") {
+        p.then(() => {
+          song.pause();
+          song.currentTime = 0;
+          song.muted = false;
+        }).catch(() => {
+          // ignore
+        });
+      }
+    }
+
+    // Unlock on first interaction anywhere
+    document.addEventListener("touchstart", unlockAudio, { once: true });
+    document.addEventListener("click", unlockAudio, { once: true });
+
+    function playSongNow() {
+      song.muted = false;
+      song.currentTime = 0;
+      song.volume = 1;
+
+      const p = song.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(() => {
+          // Show fallback button if blocked
+          soundFix.style.display = "inline-block";
+        });
+      }
+    }
+
+    // Fallback: user taps this button, music starts
+    soundFix.addEventListener("click", () => {
+      soundFix.style.display = "none";
+      unlockAudio();
+      playSongNow();
+    });
+
     // ---------- NO runs away ----------
     function moveNo() {
       const pad = 10;
-      const w = 120; // approx button width
-      const h = 60;  // approx button height
+      const w = 120;
+      const h = 60;
       const x = Math.max(pad, Math.min(window.innerWidth - w - pad, Math.random() * (window.innerWidth - w)));
       const y = Math.max(pad, Math.min(window.innerHeight - h - pad, Math.random() * (window.innerHeight - h)));
 
@@ -194,43 +248,22 @@
       noBtn.style.display = "none";
       maybeBtn.style.display = "none";
 
-      // Play MP3 (bulletproof)
-      playSong();
+      // unlock + play (reliable on iPhone)
+      unlockAudio();
+      // try twice in case the browser needs a tick
+      playSongNow();
+      setTimeout(playSongNow, 150);
 
       // Flowers/hearts
-      spawnFallingEmojis(80);
+      spawnFallingEmojis(90);
 
-      // Confetti (reduced “balls”)
+      // Confetti (reduced particles)
       startConfetti(90);
     }
 
-    function playSong() {
-      song.currentTime = 0;
-      song.volume = 1;
-
-      const attempt = song.play();
-      if (attempt && typeof attempt.then === "function") {
-        attempt.catch(() => {
-          // If browser blocks it, show fallback button
-          soundFix.style.display = "inline-block";
-        });
-      }
-    }
-
-    // Fallback button: if autoplay blocked, user taps this and music starts
-    soundFix.addEventListener("click", () => {
-      soundFix.style.display = "none";
-      song.play().catch(() => {});
-    });
-
-    // Also try to unlock audio on first touch/click anywhere (mobile Safari helper)
-    document.addEventListener("touchstart", () => {
-      if (song.paused && celebrated) song.play().catch(() => {});
-    }, { once: false });
-
     // ---------- Falling emojis ----------
-    function spawnFallingEmojis(total = 70) {
-      const emojis = ["🌷","🌸","🌹","💐","🪻","🌺","🌼","❤️"]; // more flowers, some hearts
+    function spawnFallingEmojis(total = 90) {
+      const emojis = ["🌷","🌸","🌹","💐","🪻","🌺","🌼","🌻","❤️"]; // more flowers, some hearts
       for (let i = 0; i < total; i++) {
         const el = document.createElement("div");
         el.className = "float";
@@ -238,7 +271,7 @@
         el.style.left = (Math.random() * window.innerWidth) + "px";
         el.style.animationDuration = (3 + Math.random() * 5) + "s";
         el.style.animationDelay = (Math.random() * 1.2) + "s";
-        el.style.fontSize = (32 + Math.random() * 30) + "px";
+        el.style.fontSize = (30 + Math.random() * 32) + "px";
         document.body.appendChild(el);
         setTimeout(() => el.remove(), 11000);
       }
