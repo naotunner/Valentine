@@ -1,0 +1,172 @@
+<!-- PROGRAMMED BY @ITGAUY -->
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Would you date me?</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #FAEEE6;
+      overflow: hidden; /* prevents scroll when button moves */
+    }
+    #content {
+      border: 1px solid transparent;
+      background-color: #FFC0CB;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+      padding: 20px;
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    #yesButton, #noButton {
+      font-size: 20px;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
+      transition: 0.3s;
+      padding: 15px 22px;
+      border: none;
+      cursor: pointer;
+      margin: 10px;
+    }
+    #yesButton {
+      background-color: #4CAF50;
+      color: white;
+    }
+    #noButton {
+      background-color: #f44336;
+      color: white;
+      position: relative;
+    }
+    #noButton:disabled {
+      background-color: #ddd;
+      color: #666;
+      box-shadow: none;
+      cursor: not-allowed;
+    }
+    #yesButton:hover, #noButton:hover {
+      box-shadow: 0 12px 20px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
+    }
+
+    .heart {
+      position: fixed;
+      top: -120px;
+      width: 100px;
+      height: 100px;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 29.6"><path fill="%23FF0000" d="M16 29.6c-1-.6-21-12.6-16-20C5.7 5.6 10.3 4 16 11c5.7-7 10.3-5.4 16-2.6 5 7.4-15 19.6-16 20z"/></svg>');
+      background-repeat: no-repeat;
+      background-size: contain;
+      animation: fall 4s linear infinite;
+      z-index: 1;
+      pointer-events: none;
+    }
+
+    @keyframes fall {
+      0% { transform: translateY(-120px); }
+      100% { transform: translateY(calc(100vh + 200px)); }
+    }
+  </style>
+</head>
+<body>
+  <div id="content">
+    <h2 id="question">Would you date me?</h2>
+    <button id="yesButton">YES</button>
+    <button id="noButton">NO</button>
+    <p id="message"></p>
+  </div>
+
+  <script>
+    const yesBtn = document.getElementById("yesButton");
+    const noBtn = document.getElementById("noButton");
+    const question = document.getElementById("question");
+    const message = document.getElementById("message");
+
+    let noClickCount = 0;
+
+    function clamp(n, min, max) {
+      return Math.max(min, Math.min(max, n));
+    }
+
+    function moveNoButton() {
+      const btnRect = noBtn.getBoundingClientRect();
+      const padding = 10;
+
+      const maxX = window.innerWidth - btnRect.width - padding;
+      const maxY = window.innerHeight - btnRect.height - padding;
+
+      const x = clamp(Math.random() * maxX, padding, maxX);
+      const y = clamp(Math.random() * maxY, padding, maxY);
+
+      noBtn.style.position = "fixed";
+      noBtn.style.left = `${x}px`;
+      noBtn.style.top = `${y}px`;
+
+      // place message under the button
+      message.style.position = "fixed";
+      message.style.left = `${x}px`;
+      message.style.top = `${y + btnRect.height + 8}px`;
+    }
+
+    noBtn.addEventListener("click", function () {
+      noClickCount++;
+
+      if (noClickCount === 1) {
+        yesBtn.style.fontSize = "30px";
+      } else if (noClickCount === 2) {
+        noBtn.style.fontSize = "10px";
+        yesBtn.style.fontSize = "40px";
+      } else if (noClickCount === 3) {
+        yesBtn.style.fontSize = "90px";
+        noBtn.style.fontSize = "7px";
+      }
+
+      if (noClickCount >= 4 && noClickCount < 15) {
+        moveNoButton();
+      }
+
+      if (noClickCount >= 10 && noClickCount < 15) {
+        message.innerText = "Are you sure?";
+      }
+
+      if (noClickCount === 15) {
+        message.innerText = "Oh no! You broke the button :c";
+        noBtn.disabled = true;
+        noBtn.style.color = "grey";   // ✅ fixed
+      }
+    });
+
+    yesBtn.addEventListener("click", function () {
+      question.innerText = "YIEEEEE SAN DATE NATIN? OTW";
+
+      for (let i = 0; i < 100; i++) {
+        const heart = document.createElement("div");
+        heart.className = "heart";
+        heart.style.left = Math.random() * window.innerWidth + "px";
+        heart.style.animationDuration = (Math.random() * 2 + 3) + "s"; // 3–5s
+        heart.style.animationDelay = (Math.random() * 2) + "s"; // 0–2s
+        document.body.appendChild(heart);
+
+        // optional: clean up after a bit so DOM doesn't grow forever
+        setTimeout(() => heart.remove(), 9000);
+      }
+
+      yesBtn.style.display = "none";
+      noBtn.style.display = "none";
+      message.innerText = "";
+    });
+
+    // If the window resizes and the NO button was moved, keep it clamped
+    window.addEventListener("resize", () => {
+      if (noBtn.style.position === "fixed" && !noBtn.disabled) moveNoButton();
+    });
+  </script>
+</body>
+</html>
