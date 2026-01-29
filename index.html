@@ -23,13 +23,14 @@
       box-shadow: 0 8px 16px rgba(0,0,0,0.2);
       padding: 26px;
       text-align: center;
-      max-width: 580px;
+      max-width: 620px;
       z-index: 2;
+      position: relative;
     }
 
     #intro {
       font-size: 16px;
-      line-height: 1.5;
+      line-height: 1.55;
       margin-bottom: 18px;
     }
 
@@ -44,37 +45,36 @@
       transition: 0.25s;
     }
 
-    #yesButton { background: #4CAF50; color: white; }
-    #noButton { background: #f44336; color: white; }
-    #maybeButton { background: #ff9800; color: white; }
+    #yesButton { background: #4CAF50; color: #fff; }
+    #noButton { background: #f44336; color: #fff; }
+    #maybeButton { background: #ff9800; color: #fff; }
 
     #noButton:disabled {
       background: #999;
       cursor: not-allowed;
+      box-shadow: none;
     }
 
+    #message {
+      min-height: 22px;
+      font-weight: 600;
+      margin-top: 10px;
+    }
+
+    /* Falling emojis */
     .float {
       position: fixed;
-      top: -100px;
-      font-size: 42px;
+      top: -120px;
+      font-size: 44px;
       animation: fall linear infinite;
       pointer-events: none;
       z-index: 1;
-    }
-
-    .taylor {
-      width: 120px;
-      border-radius: 12px;
-      position: fixed;
-      top: -150px;
-      animation: fall linear infinite;
-      pointer-events: none;
-      z-index: 1;
+      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
     }
 
     @keyframes fall {
-      from { transform: translateY(-120px); }
-      to { transform: translateY(110vh); }
+      from { transform: translateY(-140px) rotate(0deg); }
+      to   { transform: translateY(110vh) rotate(360deg); }
     }
 
     canvas {
@@ -88,155 +88,192 @@
 </head>
 
 <body>
+  <!-- MP3 (rename your file to lover.mp3 in the repo OR update this src accordingly) -->
+  <audio id="loveSong" src="lover.mp3" preload="auto" loop></audio>
 
-<canvas id="confetti"></canvas>
+  <!-- Confetti canvas -->
+  <canvas id="confetti"></canvas>
 
-<div id="content">
-  <p id="intro">
-    <strong>Hey Lover,</strong><br><br>
-    you’re the girl who has my heart, my dreams, and makes me a better me.  
-    Since you always tell me to ask you early, here goes. 💕<br><br>
-    If it’s no, you’ll have to click it <strong>5 times</strong> for it to be accepted…  
-    or your device will break &lt;3<br><br>
-    <strong>ILYTTBAMIT</strong>
-  </p>
+  <div id="content">
+    <p id="intro">
+      <strong>Hey Lover,</strong><br><br>
+      you’re the girl who has my heart, my dreams, and makes me a better me.
+      Since you always tell me to ask you early, here goes. 💕<br><br>
+      If it’s no, you’ll have to click it <strong>5 times</strong> for it to be accepted…
+      or your device will break &lt;3<br><br>
+      <strong>ILYTTBAMIT</strong>
+    </p>
 
-  <h2 id="question">Be My Valentine?</h2>
+    <h2 id="question">Be My Valentine?</h2>
 
-  <button id="yesButton">YES</button>
-  <button id="maybeButton">MAYBE</button>
-  <button id="noButton">NO</button>
+    <button id="yesButton">YES</button>
+    <button id="maybeButton">MAYBE</button>
+    <button id="noButton">NO</button>
 
-  <p id="message"></p>
-</div>
+    <p id="message"></p>
+  </div>
 
-<script>
-const yesBtn = document.getElementById("yesButton");
-const noBtn = document.getElementById("noButton");
-const maybeBtn = document.getElementById("maybeButton");
-const question = document.getElementById("question");
-const message = document.getElementById("message");
+  <script>
+    const yesBtn = document.getElementById("yesButton");
+    const noBtn = document.getElementById("noButton");
+    const maybeBtn = document.getElementById("maybeButton");
+    const question = document.getElementById("question");
+    const message = document.getElementById("message");
+    const song = document.getElementById("loveSong");
 
-let noCount = 0;
-let maybeYes = false;
+    let noCount = 0;
+    let maybeYes = false;
 
-/* ---------- NO RUNS AWAY ---------- */
-function moveNo() {
-  noBtn.style.position = "fixed";
-  noBtn.style.left = Math.random() * (window.innerWidth - 100) + "px";
-  noBtn.style.top = Math.random() * (window.innerHeight - 50) + "px";
-}
-noBtn.addEventListener("mouseenter", () => { if (!noBtn.disabled) moveNo(); });
+    // ---- NO runs away ----
+    function moveNo() {
+      noBtn.style.position = "fixed";
+      noBtn.style.left = Math.random() * (window.innerWidth - 120) + "px";
+      noBtn.style.top = Math.random() * (window.innerHeight - 60) + "px";
+      noBtn.style.zIndex = "3";
+    }
+    noBtn.addEventListener("mouseenter", () => { if (!noBtn.disabled) moveNo(); });
 
-noBtn.addEventListener("click", () => {
-  noCount++;
-  moveNo();
-  const msgs = [
-    "hmm… you sure? 😏",
-    "okay now you're playing",
-    "last chance 👀",
-    "don’t do this 😭"
-  ];
-  if (noCount <= 4) message.innerText = msgs[noCount-1];
-  if (noCount === 5) {
-    message.innerText = "💥 NO BUTTON BROKE 💥";
-    noBtn.disabled = true;
-    noBtn.innerText = "BROKEN";
-  }
-});
+    noBtn.addEventListener("click", () => {
+      noCount++;
+      if (!noBtn.disabled) moveNo();
 
-/* ---------- MAYBE ---------- */
-maybeBtn.addEventListener("click", () => {
-  if (!maybeYes) {
-    maybeYes = true;
-    maybeBtn.innerText = "u mean yes?";
-  } else {
-    yesCelebration();
-  }
-});
+      const msgs = [
+        "hmm… you sure? 😏",
+        "okay now you’re playing",
+        "last chance 👀",
+        "don’t do this 😭"
+      ];
 
-/* ---------- YES ---------- */
-yesBtn.addEventListener("click", yesCelebration);
+      if (noCount <= 4) message.innerText = msgs[noCount - 1];
 
-function yesCelebration() {
-  question.innerText = "YAY! BE READY FOR THE GREATEST BEACH SIDE NIGHT OF YOUR LIFE!";
-
-  yesBtn.style.display = "none";
-  noBtn.style.display = "none";
-  maybeBtn.style.display = "none";
-  message.innerText = "";
-
-  // 🎵 Taylor Swift music
-  const iframe = document.createElement("iframe");
-  iframe.src = "https://www.youtube.com/embed/-BjZmE2gtdo?autoplay=1&loop=1&playlist=-BjZmE2gtdo";
-  iframe.allow = "autoplay";
-  iframe.style.display = "none";
-  document.body.appendChild(iframe);
-
-  // 💕 Hearts + 🌷 Tulips
-  for (let i = 0; i < 40; i++) {
-    const el = document.createElement("div");
-    el.className = "float";
-    el.innerText = Math.random() > 0.5 ? "❤️" : "🌷";
-    el.style.left = Math.random() * window.innerWidth + "px";
-    el.style.animationDuration = 3 + Math.random() * 4 + "s";
-    document.body.appendChild(el);
-  }
-
-  // 🖼️ Taylor Swift pics
-  const pics = [
-    "https://i.imgur.com/7R5kC9n.jpg",
-    "https://i.imgur.com/xC1Zz0m.jpg",
-    "https://i.imgur.com/6oKcP1G.jpg"
-  ];
-
-  pics.forEach(() => {
-    const img = document.createElement("img");
-    img.className = "taylor";
-    img.src = pics[Math.floor(Math.random() * pics.length)];
-    img.style.left = Math.random() * window.innerWidth + "px";
-    img.style.animationDuration = 4 + Math.random() * 4 + "s";
-    document.body.appendChild(img);
-  });
-
-  // 🎉 Confetti
-  startConfetti();
-}
-
-/* ---------- CONFETTI ---------- */
-const canvas = document.getElementById("confetti");
-const ctx = canvas.getContext("2d");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let confetti = [];
-function startConfetti() {
-  for (let i = 0; i < 200; i++) {
-    confetti.push({
-      x: Math.random() * canvas.width,
-      y: Math.random() * canvas.height,
-      r: Math.random() * 6 + 4,
-      d: Math.random() * 50,
-      color: `hsl(${Math.random()*360},100%,50%)`,
-      tilt: Math.random() * 10
+      if (noCount === 5) {
+        message.innerText = "💥 NO BUTTON BROKE 💥";
+        noBtn.disabled = true;
+        noBtn.innerText = "BROKEN";
+      }
     });
-  }
-  requestAnimationFrame(drawConfetti);
-}
 
-function drawConfetti() {
-  ctx.clearRect(0,0,canvas.width,canvas.height);
-  confetti.forEach(c => {
-    ctx.beginPath();
-    ctx.fillStyle = c.color;
-    ctx.arc(c.x, c.y, c.r, 0, Math.PI*2);
-    ctx.fill();
-    c.y += 3;
-    if (c.y > canvas.height) c.y = -10;
-  });
-  requestAnimationFrame(drawConfetti);
-}
-</script>
+    // ---- MAYBE -> "u mean yes?" ----
+    maybeBtn.addEventListener("click", () => {
+      if (!maybeYes) {
+        maybeYes = true;
+        maybeBtn.innerText = "u mean yes?";
+      } else {
+        yesCelebration();
+      }
+    });
 
+    // ---- YES ----
+    yesBtn.addEventListener("click", yesCelebration);
+
+    function yesCelebration() {
+      question.innerText = "YAY! BE READY FOR THE GREATEST BEACH SIDE NIGHT OF YOUR LIFE!";
+      yesBtn.style.display = "none";
+      noBtn.style.display = "none";
+      maybeBtn.style.display = "none";
+      message.innerText = "";
+
+      // Play MP3 with a smooth fade-in
+      song.volume = 0;
+      song.play().catch(() => { /* in case autoplay is blocked */ });
+
+      let v = 0;
+      const fade = setInterval(() => {
+        v += 0.05;
+        song.volume = Math.min(v, 1);
+        if (v >= 1) clearInterval(fade);
+      }, 200);
+
+      // More flowers, fewer hearts (no Taylor images)
+      spawnFallingEmojis();
+
+      // Confetti with fewer "balls" (particles)
+      startConfetti(90);
+    }
+
+    // ---- Falling flowers/tulips/hearts ----
+    function spawnFallingEmojis() {
+      const emojis = ["🌷","🌸","🌹","💐","🪻","🌺","❤️"]; // more flowers, some hearts
+      const total = 70; // more flowers overall
+
+      for (let i = 0; i < total; i++) {
+        const el = document.createElement("div");
+        el.className = "float";
+        el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+        el.style.left = (Math.random() * window.innerWidth) + "px";
+        el.style.animationDuration = (3 + Math.random() * 5) + "s";
+        el.style.animationDelay = (Math.random() * 1.2) + "s";
+        el.style.fontSize = (34 + Math.random() * 26) + "px";
+        document.body.appendChild(el);
+
+        // cleanup
+        setTimeout(() => el.remove(), 10000);
+      }
+    }
+
+    // ---- Confetti (reduced particle count) ----
+    const canvas = document.getElementById("confetti");
+    const ctx = canvas.getContext("2d");
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    resizeCanvas();
+    window.addEventListener("resize", resizeCanvas);
+
+    let confetti = [];
+    let confettiAnimating = false;
+
+    function startConfetti(particleCount = 90) {
+      confetti = [];
+      for (let i = 0; i < particleCount; i++) {
+        confetti.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height * 0.2,
+          r: Math.random() * 4 + 2,  // smaller dots
+          vx: (Math.random() - 0.5) * 3,
+          vy: Math.random() * 3 + 2,
+          color: `hsl(${Math.random() * 360}, 100%, 55%)`,
+          life: 220 + Math.random() * 80
+        });
+      }
+
+      if (!confettiAnimating) {
+        confettiAnimating = true;
+        requestAnimationFrame(drawConfetti);
+      }
+    }
+
+    function drawConfetti() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      confetti.forEach(p => {
+        ctx.beginPath();
+        ctx.fillStyle = p.color;
+        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fill();
+
+        p.x += p.vx;
+        p.y += p.vy;
+        p.vy += 0.02; // slight gravity
+        p.life -= 1;
+
+        // wrap if needed
+        if (p.y > canvas.height + 20) p.y = -10;
+        if (p.x < -20) p.x = canvas.width + 10;
+        if (p.x > canvas.width + 20) p.x = -10;
+      });
+
+      // slowly reduce particles over time
+      confetti = confetti.filter(p => p.life > 0);
+
+      if (confetti.length > 0) {
+        requestAnimationFrame(drawConfetti);
+      } else {
+        confettiAnimating = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+      }
+    }
+  </script>
 </body>
 </html>
