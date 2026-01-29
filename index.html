@@ -6,92 +6,96 @@
   <title>Be My Valentine?</title>
 
   <style>
-    body {
+    body{
       font-family: Arial, sans-serif;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-      background-color: #FAEEE6;
-      overflow: hidden;
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      height:100vh;
+      margin:0;
+      background:#FAEEE6;
+      overflow:hidden;
     }
 
-    #content {
-      background-color: #FFC0CB;
-      border-radius: 12px;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      padding: 26px;
-      text-align: center;
-      max-width: 620px;
-      z-index: 2;
-      position: relative;
+    #content{
+      background:#FFC0CB;
+      border-radius:12px;
+      box-shadow:0 8px 16px rgba(0,0,0,0.2);
+      padding:26px;
+      text-align:center;
+      max-width:620px;
+      z-index:2;
+      position:relative;
     }
 
-    #intro {
-      font-size: 16px;
-      line-height: 1.55;
-      margin-bottom: 18px;
+    #intro{
+      font-size:16px;
+      line-height:1.55;
+      margin:0 0 18px 0;
     }
 
-    button {
-      font-size: 20px;
-      border-radius: 12px;
-      padding: 14px 22px;
-      margin: 10px;
-      border: none;
-      cursor: pointer;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
-      transition: 0.25s;
+    #question{
+      margin:10px 0 6px 0;
     }
 
-    #yesButton { background: #4CAF50; color: #fff; }
-    #noButton { background: #f44336; color: #fff; }
-    #maybeButton { background: #ff9800; color: #fff; }
-
-    #noButton:disabled {
-      background: #999;
-      cursor: not-allowed;
-      box-shadow: none;
+    button{
+      font-size:20px;
+      border-radius:12px;
+      padding:14px 22px;
+      margin:10px;
+      border:none;
+      cursor:pointer;
+      box-shadow:0 8px 16px rgba(0,0,0,0.2);
+      transition:0.25s;
     }
 
-    #message {
-      min-height: 22px;
-      font-weight: 600;
-      margin-top: 10px;
+    #yesButton{ background:#4CAF50; color:#fff; }
+    #maybeButton{ background:#ff9800; color:#fff; }
+    #noButton{ background:#f44336; color:#fff; }
+
+    #noButton:disabled{
+      background:#999;
+      cursor:not-allowed;
+      box-shadow:none;
     }
 
-    /* Falling emojis */
-    .float {
-      position: fixed;
-      top: -120px;
-      font-size: 44px;
+    #message{
+      min-height:22px;
+      font-weight:600;
+      margin-top:10px;
+    }
+
+    /* Falling flowers/hearts */
+    .float{
+      position:fixed;
+      top:-120px;
       animation: fall linear infinite;
-      pointer-events: none;
-      z-index: 1;
+      pointer-events:none;
+      z-index:1;
       filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
+      user-select:none;
     }
 
-    @keyframes fall {
+    @keyframes fall{
       from { transform: translateY(-140px) rotate(0deg); }
       to   { transform: translateY(110vh) rotate(360deg); }
     }
 
-    canvas {
-      position: fixed;
-      top: 0;
-      left: 0;
-      pointer-events: none;
-      z-index: 5;
+    canvas{
+      position:fixed;
+      top:0;
+      left:0;
+      pointer-events:none;
+      z-index:5;
     }
   </style>
 </head>
 
 <body>
-  <!-- MP3 (rename your file to lover.mp3 in the repo OR update this src accordingly) -->
+  <!-- Make sure your repo has: lover.mp3 (exactly) -->
   <audio id="loveSong" src="lover.mp3" preload="auto" loop></audio>
 
-  <!-- Confetti canvas -->
+  <!-- Confetti -->
   <canvas id="confetti"></canvas>
 
   <div id="content">
@@ -111,26 +115,38 @@
     <button id="noButton">NO</button>
 
     <p id="message"></p>
+
+    <!-- Hidden “tap to enable sound” fallback (shows only if needed) -->
+    <button id="soundFixBtn" style="display:none; margin-top:12px;">Tap to play music 🎶</button>
   </div>
 
   <script>
-    const yesBtn = document.getElementById("yesButton");
-    const noBtn = document.getElementById("noButton");
+    const yesBtn   = document.getElementById("yesButton");
+    const noBtn    = document.getElementById("noButton");
     const maybeBtn = document.getElementById("maybeButton");
     const question = document.getElementById("question");
-    const message = document.getElementById("message");
-    const song = document.getElementById("loveSong");
+    const message  = document.getElementById("message");
+    const song     = document.getElementById("loveSong");
+    const soundFix = document.getElementById("soundFixBtn");
 
     let noCount = 0;
     let maybeYes = false;
+    let celebrated = false;
 
-    // ---- NO runs away ----
+    // ---------- NO runs away ----------
     function moveNo() {
+      const pad = 10;
+      const w = 120; // approx button width
+      const h = 60;  // approx button height
+      const x = Math.max(pad, Math.min(window.innerWidth - w - pad, Math.random() * (window.innerWidth - w)));
+      const y = Math.max(pad, Math.min(window.innerHeight - h - pad, Math.random() * (window.innerHeight - h)));
+
       noBtn.style.position = "fixed";
-      noBtn.style.left = Math.random() * (window.innerWidth - 120) + "px";
-      noBtn.style.top = Math.random() * (window.innerHeight - 60) + "px";
+      noBtn.style.left = x + "px";
+      noBtn.style.top  = y + "px";
       noBtn.style.zIndex = "3";
     }
+
     noBtn.addEventListener("mouseenter", () => { if (!noBtn.disabled) moveNo(); });
 
     noBtn.addEventListener("click", () => {
@@ -153,7 +169,7 @@
       }
     });
 
-    // ---- MAYBE -> "u mean yes?" ----
+    // ---------- MAYBE -> "u mean yes?" ----------
     maybeBtn.addEventListener("click", () => {
       if (!maybeYes) {
         maybeYes = true;
@@ -163,39 +179,58 @@
       }
     });
 
-    // ---- YES ----
+    // ---------- YES ----------
     yesBtn.addEventListener("click", yesCelebration);
 
+    // ---------- Celebration ----------
     function yesCelebration() {
+      if (celebrated) return;
+      celebrated = true;
+
       question.innerText = "YAY! BE READY FOR THE GREATEST BEACH SIDE NIGHT OF YOUR LIFE!";
+      message.innerText = "";
+
       yesBtn.style.display = "none";
       noBtn.style.display = "none";
       maybeBtn.style.display = "none";
-      message.innerText = "";
 
-      // Play MP3 with a smooth fade-in
-      song.volume = 0;
-      song.play().catch(() => { /* in case autoplay is blocked */ });
+      // Play MP3 (bulletproof)
+      playSong();
 
-      let v = 0;
-      const fade = setInterval(() => {
-        v += 0.05;
-        song.volume = Math.min(v, 1);
-        if (v >= 1) clearInterval(fade);
-      }, 200);
+      // Flowers/hearts
+      spawnFallingEmojis(80);
 
-      // More flowers, fewer hearts (no Taylor images)
-      spawnFallingEmojis();
-
-      // Confetti with fewer "balls" (particles)
+      // Confetti (reduced “balls”)
       startConfetti(90);
     }
 
-    // ---- Falling flowers/tulips/hearts ----
-    function spawnFallingEmojis() {
-      const emojis = ["🌷","🌸","🌹","💐","🪻","🌺","❤️"]; // more flowers, some hearts
-      const total = 70; // more flowers overall
+    function playSong() {
+      song.currentTime = 0;
+      song.volume = 1;
 
+      const attempt = song.play();
+      if (attempt && typeof attempt.then === "function") {
+        attempt.catch(() => {
+          // If browser blocks it, show fallback button
+          soundFix.style.display = "inline-block";
+        });
+      }
+    }
+
+    // Fallback button: if autoplay blocked, user taps this and music starts
+    soundFix.addEventListener("click", () => {
+      soundFix.style.display = "none";
+      song.play().catch(() => {});
+    });
+
+    // Also try to unlock audio on first touch/click anywhere (mobile Safari helper)
+    document.addEventListener("touchstart", () => {
+      if (song.paused && celebrated) song.play().catch(() => {});
+    }, { once: false });
+
+    // ---------- Falling emojis ----------
+    function spawnFallingEmojis(total = 70) {
+      const emojis = ["🌷","🌸","🌹","💐","🪻","🌺","🌼","❤️"]; // more flowers, some hearts
       for (let i = 0; i < total; i++) {
         const el = document.createElement("div");
         el.className = "float";
@@ -203,17 +238,16 @@
         el.style.left = (Math.random() * window.innerWidth) + "px";
         el.style.animationDuration = (3 + Math.random() * 5) + "s";
         el.style.animationDelay = (Math.random() * 1.2) + "s";
-        el.style.fontSize = (34 + Math.random() * 26) + "px";
+        el.style.fontSize = (32 + Math.random() * 30) + "px";
         document.body.appendChild(el);
-
-        // cleanup
-        setTimeout(() => el.remove(), 10000);
+        setTimeout(() => el.remove(), 11000);
       }
     }
 
-    // ---- Confetti (reduced particle count) ----
+    // ---------- Confetti (reduced particles) ----------
     const canvas = document.getElementById("confetti");
     const ctx = canvas.getContext("2d");
+
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -222,7 +256,7 @@
     window.addEventListener("resize", resizeCanvas);
 
     let confetti = [];
-    let confettiAnimating = false;
+    let animating = false;
 
     function startConfetti(particleCount = 90) {
       confetti = [];
@@ -230,16 +264,15 @@
         confetti.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height * 0.2,
-          r: Math.random() * 4 + 2,  // smaller dots
+          r: Math.random() * 4 + 2,
           vx: (Math.random() - 0.5) * 3,
           vy: Math.random() * 3 + 2,
           color: `hsl(${Math.random() * 360}, 100%, 55%)`,
           life: 220 + Math.random() * 80
         });
       }
-
-      if (!confettiAnimating) {
-        confettiAnimating = true;
+      if (!animating) {
+        animating = true;
         requestAnimationFrame(drawConfetti);
       }
     }
@@ -255,22 +288,20 @@
 
         p.x += p.vx;
         p.y += p.vy;
-        p.vy += 0.02; // slight gravity
+        p.vy += 0.02;
         p.life -= 1;
 
-        // wrap if needed
         if (p.y > canvas.height + 20) p.y = -10;
         if (p.x < -20) p.x = canvas.width + 10;
         if (p.x > canvas.width + 20) p.x = -10;
       });
 
-      // slowly reduce particles over time
       confetti = confetti.filter(p => p.life > 0);
 
       if (confetti.length > 0) {
         requestAnimationFrame(drawConfetti);
       } else {
-        confettiAnimating = false;
+        animating = false;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
       }
     }
