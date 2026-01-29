@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Be my Valentine?</title>
+  <title>Be My Valentine?</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -26,6 +26,17 @@
       position: relative;
       z-index: 2;
       min-width: 320px;
+      max-width: 560px;
+    }
+
+    #intro {
+      font-size: 16px;
+      line-height: 1.45;
+      margin: 0 0 18px 0;
+    }
+
+    #question {
+      margin: 10px 0 6px 0;
     }
 
     #yesButton, #noButton, #maybeButton {
@@ -65,6 +76,12 @@
       box-shadow: 0 12px 20px 0 rgba(0,0,0,0.24), 0 17px 50px 0 rgba(0,0,0,0.19);
     }
 
+    #message {
+      margin-top: 10px;
+      min-height: 22px;
+      font-weight: 600;
+    }
+
     .heart {
       position: fixed;
       top: -120px;
@@ -87,10 +104,21 @@
 
 <body>
   <div id="content">
-    <h2 id="question">Be my Valentine?</h2>
+    <p id="intro">
+      <strong>Hey Loverr,</strong><br><br>
+      youre the girl who has my heart and my dreams and makes me a better me.
+      and since You always tell me to ask you early here goes.<br><br>
+      if its no, youll have to click it <strong>5 times</strong> for it to be accepted
+      or Your device will break &lt;3.<br>
+      <strong>ilYTTBAMIT</strong>
+    </p>
+
+    <h2 id="question">Be my valnetine?</h2>
+
     <button id="yesButton">YES</button>
     <button id="maybeButton">MAYBE</button>
     <button id="noButton">NO</button>
+
     <p id="message"></p>
   </div>
 
@@ -118,13 +146,12 @@
       const x = clamp(Math.random() * maxX, padding, maxX);
       const y = clamp(Math.random() * maxY, padding, maxY);
 
-      // fixed makes it leave the pink box and move around the screen
       noBtn.style.position = "fixed";
       noBtn.style.left = `${x}px`;
       noBtn.style.top = `${y}px`;
       noBtn.style.zIndex = "3";
 
-      // message follows the NO button
+      // message follows NO button when it starts running away
       message.style.position = "fixed";
       message.style.left = `${x}px`;
       message.style.top = `${y + rect.height + 8}px`;
@@ -132,14 +159,14 @@
     }
 
     function doYesCelebration() {
-      question.innerText = "YIEEEEE SAN DATE NATIN? OTW";
+      question.innerText = "YAY ! BE READY FOR THE GREATEST BEACH SIDE NIGHT OF YOUR LIFE !";
 
       for (let i = 0; i < 100; i++) {
         const heart = document.createElement("div");
         heart.className = "heart";
         heart.style.left = Math.random() * window.innerWidth + "px";
-        heart.style.animationDuration = (Math.random() * 2 + 3) + "s";
-        heart.style.animationDelay = (Math.random() * 2) + "s";
+        heart.style.animationDuration = (Math.random() * 2 + 3) + "s"; // 3–5s
+        heart.style.animationDelay = (Math.random() * 2) + "s"; // 0–2s
         document.body.appendChild(heart);
         setTimeout(() => heart.remove(), 9000);
       }
@@ -150,51 +177,53 @@
       message.innerText = "";
     }
 
+    // NO button: runs away from FIRST click and breaks after 5 clicks
     noBtn.addEventListener("click", function () {
       noClickCount++;
 
-      // From the FIRST click: move out of the pink box and around the screen
-      if (noClickCount >= 1 && noClickCount < 15) {
-        moveNoButtonAnywhere();
-      }
+      // from the FIRST click, move outside the box
+      if (!noBtn.disabled) moveNoButtonAnywhere();
 
-      // Keep your original escalating stuff (optional)
       if (noClickCount === 1) {
-        yesBtn.style.fontSize = "30px";
+        message.innerText = "hmmm… you sure? 😏";
       } else if (noClickCount === 2) {
-        noBtn.style.fontSize = "10px";
-        yesBtn.style.fontSize = "40px";
+        message.innerText = "ok now you’re just playing";
       } else if (noClickCount === 3) {
-        yesBtn.style.fontSize = "90px";
-        noBtn.style.fontSize = "7px";
-      }
-
-      if (noClickCount >= 10 && noClickCount < 15) {
-        message.innerText = "Are you sure?";
-      }
-
-      if (noClickCount === 15) {
-        message.innerText = "Oh no! You broke the button :c";
+        message.innerText = "last chance 👀";
+      } else if (noClickCount === 4) {
+        message.innerText = "don’t do this to me 😭";
+      } else if (noClickCount === 5) {
+        message.innerText = "💥 NO BUTTON BROKE 💥";
         noBtn.disabled = true;
-        noBtn.style.color = "grey";
+        noBtn.innerText = "BROKEN";
+        noBtn.style.backgroundColor = "#999";
+        noBtn.style.cursor = "not-allowed";
+        noBtn.style.color = "#fff";
       }
     });
 
+    // NO button also runs away on hover (desktop)
+    noBtn.addEventListener("mouseenter", () => {
+      if (!noBtn.disabled) moveNoButtonAnywhere();
+    });
+
+    // MAYBE becomes "u mean yes?" then acts like YES on second click
     maybeBtn.addEventListener("click", function () {
       if (!maybeTurnedToYes) {
         maybeTurnedToYes = true;
         maybeBtn.innerText = "u mean yes?";
         message.innerText = "";
       } else {
-        // second click acts like YES
         doYesCelebration();
       }
     });
 
+    // YES
     yesBtn.addEventListener("click", function () {
       doYesCelebration();
     });
 
+    // Keep NO button in-bounds on resize
     window.addEventListener("resize", () => {
       if (noBtn.style.position === "fixed" && !noBtn.disabled) {
         moveNoButtonAnywhere();
