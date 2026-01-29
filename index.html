@@ -1,3 +1,5 @@
+<!-- force redeploy -->
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -31,7 +33,7 @@
     #intro{
       font-size:16px;
       line-height:1.55;
-      margin:0 0 18px 0;
+      margin-bottom:18px;
     }
 
     #question{
@@ -65,14 +67,12 @@
       margin-top:10px;
     }
 
-    /* Falling flowers/hearts */
     .float{
       position:fixed;
       top:-120px;
       animation: fall linear infinite;
       pointer-events:none;
       z-index:1;
-      filter: drop-shadow(0 6px 10px rgba(0,0,0,0.15));
       user-select:none;
     }
 
@@ -99,10 +99,12 @@
 </head>
 
 <body>
-  <!-- IMPORTANT: file must be exactly "lover.mp3" in the same folder as index.html -->
-  <audio id="loveSong" src="lover.mp3" preload="auto" loop playsinline></audio>
 
-  <!-- Confetti -->
+  <!-- MP3 must exist as lover.mp3 in repo root -->
+  <audio id="loveSong" preload="auto" loop playsinline>
+    <source src="lover.mp3" type="audio/mpeg">
+  </audio>
+
   <canvas id="confetti"></canvas>
 
   <div id="content">
@@ -123,221 +125,135 @@
 
     <p id="message"></p>
 
-    <!-- Fallback button if iPhone blocks audio -->
     <button id="soundFixBtn">Tap to play music 🎶</button>
   </div>
 
   <script>
-    const yesBtn   = document.getElementById("yesButton");
-    const noBtn    = document.getElementById("noButton");
+    const yesBtn = document.getElementById("yesButton");
+    const noBtn = document.getElementById("noButton");
     const maybeBtn = document.getElementById("maybeButton");
     const question = document.getElementById("question");
-    const message  = document.getElementById("message");
-
-    const song     = document.getElementById("loveSong");
+    const message = document.getElementById("message");
+    const song = document.getElementById("loveSong");
     const soundFix = document.getElementById("soundFixBtn");
 
     let noCount = 0;
     let maybeYes = false;
     let celebrated = false;
 
-    // ---------- AUDIO UNLOCK (fixes iPhone/Safari) ----------
-    let audioUnlocked = false;
-
-    function unlockAudio() {
-      if (audioUnlocked) return;
-      audioUnlocked = true;
-
-      // Prime audio on mobile by briefly playing muted
-      song.muted = true;
-      const p = song.play();
-      if (p && typeof p.then === "function") {
-        p.then(() => {
-          song.pause();
-          song.currentTime = 0;
-          song.muted = false;
-        }).catch(() => {
-          // ignore
-        });
-      }
+    // ---- NO RUNS AWAY ----
+    function moveNo(){
+      noBtn.style.position="fixed";
+      noBtn.style.left=Math.random()*(window.innerWidth-120)+"px";
+      noBtn.style.top=Math.random()*(window.innerHeight-60)+"px";
     }
+    noBtn.addEventListener("mouseenter",()=>{ if(!noBtn.disabled) moveNo(); });
 
-    // Unlock on first interaction anywhere
-    document.addEventListener("touchstart", unlockAudio, { once: true });
-    document.addEventListener("click", unlockAudio, { once: true });
-
-    function playSongNow() {
-      song.muted = false;
-      song.currentTime = 0;
-      song.volume = 1;
-
-      const p = song.play();
-      if (p && typeof p.catch === "function") {
-        p.catch(() => {
-          // Show fallback button if blocked
-          soundFix.style.display = "inline-block";
-        });
-      }
-    }
-
-    // Fallback: user taps this button, music starts
-    soundFix.addEventListener("click", () => {
-      soundFix.style.display = "none";
-      unlockAudio();
-      playSongNow();
-    });
-
-    // ---------- NO runs away ----------
-    function moveNo() {
-      const pad = 10;
-      const w = 120;
-      const h = 60;
-      const x = Math.max(pad, Math.min(window.innerWidth - w - pad, Math.random() * (window.innerWidth - w)));
-      const y = Math.max(pad, Math.min(window.innerHeight - h - pad, Math.random() * (window.innerHeight - h)));
-
-      noBtn.style.position = "fixed";
-      noBtn.style.left = x + "px";
-      noBtn.style.top  = y + "px";
-      noBtn.style.zIndex = "3";
-    }
-
-    noBtn.addEventListener("mouseenter", () => { if (!noBtn.disabled) moveNo(); });
-
-    noBtn.addEventListener("click", () => {
+    noBtn.addEventListener("click",()=>{
       noCount++;
-      if (!noBtn.disabled) moveNo();
-
-      const msgs = [
-        "hmm… you sure? 😏",
-        "okay now you’re playing",
-        "last chance 👀",
-        "don’t do this 😭"
-      ];
-
-      if (noCount <= 4) message.innerText = msgs[noCount - 1];
-
-      if (noCount === 5) {
-        message.innerText = "💥 NO BUTTON BROKE 💥";
-        noBtn.disabled = true;
-        noBtn.innerText = "BROKEN";
+      if(!noBtn.disabled) moveNo();
+      const msgs=["hmm… you sure? 😏","okay now you’re playing","last chance 👀","don’t do this 😭"];
+      if(noCount<=4) message.innerText=msgs[noCount-1];
+      if(noCount===5){
+        message.innerText="💥 NO BUTTON BROKE 💥";
+        noBtn.disabled=true;
+        noBtn.innerText="BROKEN";
       }
     });
 
-    // ---------- MAYBE -> "u mean yes?" ----------
-    maybeBtn.addEventListener("click", () => {
-      if (!maybeYes) {
-        maybeYes = true;
-        maybeBtn.innerText = "u mean yes?";
+    // ---- MAYBE ----
+    maybeBtn.addEventListener("click",()=>{
+      if(!maybeYes){
+        maybeYes=true;
+        maybeBtn.innerText="u mean yes?";
       } else {
         yesCelebration();
       }
     });
 
-    // ---------- YES ----------
     yesBtn.addEventListener("click", yesCelebration);
 
-    // ---------- Celebration ----------
-    function yesCelebration() {
-      if (celebrated) return;
-      celebrated = true;
+    function yesCelebration(){
+      if(celebrated) return;
+      celebrated=true;
 
-      question.innerText = "YAY! BE READY FOR THE GREATEST BEACH SIDE NIGHT OF YOUR LIFE!";
-      message.innerText = "";
+      question.innerText="YAY! BE READY FOR THE GREATEST BEACH SIDE NIGHT OF YOUR LIFE!";
+      yesBtn.style.display="none";
+      noBtn.style.display="none";
+      maybeBtn.style.display="none";
+      message.innerText="";
 
-      yesBtn.style.display = "none";
-      noBtn.style.display = "none";
-      maybeBtn.style.display = "none";
+      playSong();
 
-      // unlock + play (reliable on iPhone)
-      unlockAudio();
-      // try twice in case the browser needs a tick
-      playSongNow();
-      setTimeout(playSongNow, 150);
-
-      // Flowers/hearts
-      spawnFallingEmojis(90);
-
-      // Confetti (reduced particles)
-      startConfetti(90);
+      spawnFalling(90);
+      startConfetti(80);
     }
 
-    // ---------- Falling emojis ----------
-    function spawnFallingEmojis(total = 90) {
-      const emojis = ["🌷","🌸","🌹","💐","🪻","🌺","🌼","🌻","❤️"]; // more flowers, some hearts
-      for (let i = 0; i < total; i++) {
-        const el = document.createElement("div");
-        el.className = "float";
-        el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
-        el.style.left = (Math.random() * window.innerWidth) + "px";
-        el.style.animationDuration = (3 + Math.random() * 5) + "s";
-        el.style.animationDelay = (Math.random() * 1.2) + "s";
-        el.style.fontSize = (30 + Math.random() * 32) + "px";
-        document.body.appendChild(el);
-        setTimeout(() => el.remove(), 11000);
+    // ---- AUDIO (bulletproof) ----
+    function playSong(){
+      song.currentTime=0;
+      song.volume=1;
+      const p=song.play();
+      if(p && p.catch){
+        p.catch(()=> soundFix.style.display="inline-block");
       }
     }
 
-    // ---------- Confetti (reduced particles) ----------
-    const canvas = document.getElementById("confetti");
-    const ctx = canvas.getContext("2d");
+    soundFix.addEventListener("click",()=>{
+      soundFix.style.display="none";
+      song.play().catch(()=>{});
+    });
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+    // ---- FLOWERS ----
+    function spawnFalling(total){
+      const emojis=["🌷","🌸","🌹","💐","🪻","🌺","🌼","🌻","❤️"];
+      for(let i=0;i<total;i++){
+        const el=document.createElement("div");
+        el.className="float";
+        el.innerText=emojis[Math.floor(Math.random()*emojis.length)];
+        el.style.left=Math.random()*window.innerWidth+"px";
+        el.style.animationDuration=(3+Math.random()*5)+"s";
+        el.style.fontSize=(28+Math.random()*34)+"px";
+        document.body.appendChild(el);
+        setTimeout(()=>el.remove(),11000);
+      }
     }
-    resizeCanvas();
-    window.addEventListener("resize", resizeCanvas);
 
-    let confetti = [];
-    let animating = false;
+    // ---- CONFETTI ----
+    const canvas=document.getElementById("confetti");
+    const ctx=canvas.getContext("2d");
+    canvas.width=window.innerWidth;
+    canvas.height=window.innerHeight;
 
-    function startConfetti(particleCount = 90) {
-      confetti = [];
-      for (let i = 0; i < particleCount; i++) {
+    let confetti=[];
+    function startConfetti(n){
+      confetti=[];
+      for(let i=0;i<n;i++){
         confetti.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height * 0.2,
-          r: Math.random() * 4 + 2,
-          vx: (Math.random() - 0.5) * 3,
-          vy: Math.random() * 3 + 2,
-          color: `hsl(${Math.random() * 360}, 100%, 55%)`,
-          life: 220 + Math.random() * 80
+          x:Math.random()*canvas.width,
+          y:Math.random()*canvas.height*0.2,
+          r:Math.random()*4+2,
+          vx:(Math.random()-0.5)*3,
+          vy:Math.random()*3+2,
+          color:`hsl(${Math.random()*360},100%,55%)`
         });
       }
-      if (!animating) {
-        animating = true;
-        requestAnimationFrame(drawConfetti);
-      }
+      requestAnimationFrame(drawConfetti);
     }
 
-    function drawConfetti() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      confetti.forEach(p => {
+    function drawConfetti(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      confetti.forEach(c=>{
         ctx.beginPath();
-        ctx.fillStyle = p.color;
-        ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle=c.color;
+        ctx.arc(c.x,c.y,c.r,0,Math.PI*2);
         ctx.fill();
-
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += 0.02;
-        p.life -= 1;
-
-        if (p.y > canvas.height + 20) p.y = -10;
-        if (p.x < -20) p.x = canvas.width + 10;
-        if (p.x > canvas.width + 20) p.x = -10;
+        c.x+=c.vx;
+        c.y+=c.vy;
       });
-
-      confetti = confetti.filter(p => p.life > 0);
-
-      if (confetti.length > 0) {
-        requestAnimationFrame(drawConfetti);
-      } else {
-        animating = false;
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      }
+      if(confetti.length>0) requestAnimationFrame(drawConfetti);
     }
   </script>
+
 </body>
 </html>
