@@ -1,260 +1,219 @@
-<!-- force redeploy -->
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
   <title>Be My Valentine?</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <style>
-    body{
+    body {
+      margin: 0;
       font-family: Arial, sans-serif;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      height:100vh;
-      margin:0;
-      background:#FAEEE6;
-      overflow:hidden;
+      background: #FAEEE6;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    #content{
-      background:#FFC0CB;
-      border-radius:12px;
-      box-shadow:0 8px 16px rgba(0,0,0,0.2);
-      padding:26px;
-      text-align:center;
-      max-width:620px;
-      z-index:2;
-      position:relative;
+    #box {
+      background: #FFC0CB;
+      padding: 26px;
+      border-radius: 14px;
+      text-align: center;
+      box-shadow: 0 10px 25px rgba(0,0,0,.25);
+      z-index: 10;
+      max-width: 600px;
     }
 
-    #intro{
-      font-size:16px;
-      line-height:1.55;
-      margin-bottom:18px;
+    button {
+      padding: 14px 22px;
+      font-size: 20px;
+      border-radius: 12px;
+      border: none;
+      margin: 10px;
+      cursor: pointer;
+      box-shadow: 0 6px 14px rgba(0,0,0,.25);
     }
 
-    #question{
-      margin:10px 0 6px 0;
-    }
+    #yes { background:#4CAF50; color:#fff; }
+    #maybe { background:#ff9800; color:#fff; }
+    #no { background:#f44336; color:#fff; }
 
-    button{
-      font-size:20px;
-      border-radius:12px;
-      padding:14px 22px;
-      margin:10px;
-      border:none;
-      cursor:pointer;
-      box-shadow:0 8px 16px rgba(0,0,0,0.2);
-      transition:0.25s;
-    }
-
-    #yesButton{ background:#4CAF50; color:#fff; }
-    #maybeButton{ background:#ff9800; color:#fff; }
-    #noButton{ background:#f44336; color:#fff; }
-
-    #noButton:disabled{
+    #no:disabled {
       background:#999;
-      cursor:not-allowed;
       box-shadow:none;
     }
 
-    #message{
-      min-height:22px;
-      font-weight:600;
-      margin-top:10px;
-    }
-
-    .float{
-      position:fixed;
-      top:-120px;
+    .float {
+      position: fixed;
+      top: -100px;
+      font-size: 36px;
       animation: fall linear infinite;
-      pointer-events:none;
-      z-index:1;
-      user-select:none;
+      pointer-events: none;
     }
 
-    @keyframes fall{
-      from { transform: translateY(-140px) rotate(0deg); }
-      to   { transform: translateY(110vh) rotate(360deg); }
+    @keyframes fall {
+      from { transform: translateY(-120px) rotate(0deg); }
+      to { transform: translateY(110vh) rotate(360deg); }
     }
 
-    canvas{
-      position:fixed;
-      top:0;
-      left:0;
-      pointer-events:none;
-      z-index:5;
-    }
-
-    #soundFixBtn{
-      display:none;
-      margin-top:12px;
-      font-size:16px;
-      padding:10px 14px;
+    canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+      z-index: 5;
     }
   </style>
 </head>
 
 <body>
 
-  <!-- MP3 must exist as lover.mp3 in repo root -->
-  <audio id="loveSong" preload="auto" loop playsinline>
-    <source src="lover.mp3" type="audio/mpeg">
-  </audio>
+<!-- AUDIO -->
+<audio id="song" src="lover.mp3" preload="auto" loop></audio>
 
-  <canvas id="confetti"></canvas>
+<canvas id="confetti"></canvas>
 
-  <div id="content">
-    <p id="intro">
-      <strong>Hey Lover,</strong><br><br>
-      you’re the girl who has my heart, my dreams, and makes me a better me.
-      Since you always tell me to ask you early, here goes. 💕<br><br>
-      If it’s no, you’ll have to click it <strong>5 times</strong> for it to be accepted…
-      or your device will break &lt;3<br><br>
-      <strong>ILYTTBAMIT</strong>
-    </p>
+<div id="box">
+  <p>
+    <strong>Hey Lover,</strong><br><br>
+    you’re the girl who has my heart, my dreams, and makes me a better me.
+    Since you always tell me to ask you early, here goes 💕<br><br>
+    If it’s no, you’ll have to click it <b>5 times</b> for it to be accepted…
+    or your device will break 😈<br><br>
+    <strong>ILYTTBAMIT</strong>
+  </p>
 
-    <h2 id="question">Be My Valentine?</h2>
+  <h2 id="question">Be My Valentine?</h2>
 
-    <button id="yesButton">YES</button>
-    <button id="maybeButton">MAYBE</button>
-    <button id="noButton">NO</button>
+  <button id="yes">YES</button>
+  <button id="maybe">MAYBE</button>
+  <button id="no">NO</button>
 
-    <p id="message"></p>
+  <p id="msg"></p>
+</div>
 
-    <button id="soundFixBtn">Tap to play music 🎶</button>
-  </div>
+<script>
+  const song = document.getElementById("song");
+  const yes = document.getElementById("yes");
+  const no = document.getElementById("no");
+  const maybe = document.getElementById("maybe");
+  const question = document.getElementById("question");
+  const msg = document.getElementById("msg");
 
-  <script>
-    const yesBtn = document.getElementById("yesButton");
-    const noBtn = document.getElementById("noButton");
-    const maybeBtn = document.getElementById("maybeButton");
-    const question = document.getElementById("question");
-    const message = document.getElementById("message");
-    const song = document.getElementById("loveSong");
-    const soundFix = document.getElementById("soundFixBtn");
+  let noCount = 0;
+  let maybeClicked = false;
+  let started = false;
 
-    let noCount = 0;
-    let maybeYes = false;
-    let celebrated = false;
+  // -------- NO RUNS AWAY --------
+  function moveNo() {
+    no.style.position = "fixed";
+    no.style.left = Math.random() * (window.innerWidth - 120) + "px";
+    no.style.top = Math.random() * (window.innerHeight - 60) + "px";
+  }
+  no.addEventListener("mouseenter", moveNo);
 
-    // ---- NO RUNS AWAY ----
-    function moveNo(){
-      noBtn.style.position="fixed";
-      noBtn.style.left=Math.random()*(window.innerWidth-120)+"px";
-      noBtn.style.top=Math.random()*(window.innerHeight-60)+"px";
+  no.addEventListener("click", () => {
+    noCount++;
+    moveNo();
+    if (noCount === 5) {
+      no.disabled = true;
+      no.innerText = "BROKEN 💥";
+      msg.innerText = "too late 😏";
     }
-    noBtn.addEventListener("mouseenter",()=>{ if(!noBtn.disabled) moveNo(); });
+  });
 
-    noBtn.addEventListener("click",()=>{
-      noCount++;
-      if(!noBtn.disabled) moveNo();
-      const msgs=["hmm… you sure? 😏","okay now you’re playing","last chance 👀","don’t do this 😭"];
-      if(noCount<=4) message.innerText=msgs[noCount-1];
-      if(noCount===5){
-        message.innerText="💥 NO BUTTON BROKE 💥";
-        noBtn.disabled=true;
-        noBtn.innerText="BROKEN";
-      }
-    });
-
-    // ---- MAYBE ----
-    maybeBtn.addEventListener("click",()=>{
-      if(!maybeYes){
-        maybeYes=true;
-        maybeBtn.innerText="u mean yes?";
-      } else {
-        yesCelebration();
-      }
-    });
-
-    yesBtn.addEventListener("click", yesCelebration);
-
-    function yesCelebration(){
-      if(celebrated) return;
-      celebrated=true;
-
-      question.innerText="YAY! BE READY FOR THE GREATEST BEACH SIDE NIGHT OF YOUR LIFE!";
-      yesBtn.style.display="none";
-      noBtn.style.display="none";
-      maybeBtn.style.display="none";
-      message.innerText="";
-
-      playSong();
-
-      spawnFalling(90);
-      startConfetti(80);
+  // -------- MAYBE --------
+  maybe.addEventListener("click", () => {
+    if (!maybeClicked) {
+      maybeClicked = true;
+      maybe.innerText = "u mean yes?";
+    } else {
+      yesCelebration();
     }
+  });
 
-    // ---- AUDIO (bulletproof) ----
-    function playSong(){
-      song.currentTime=0;
-      song.volume=1;
-      const p=song.play();
-      if(p && p.catch){
-        p.catch(()=> soundFix.style.display="inline-block");
-      }
-    }
+  // -------- YES --------
+  yes.addEventListener("click", yesCelebration);
 
-    soundFix.addEventListener("click",()=>{
-      soundFix.style.display="none";
-      song.play().catch(()=>{});
-    });
+  function yesCelebration() {
+    if (started) return;
+    started = true;
 
-    // ---- FLOWERS ----
-    function spawnFalling(total){
-      const emojis=["🌷","🌸","🌹","💐","🪻","🌺","🌼","🌻","❤️"];
-      for(let i=0;i<total;i++){
-        const el=document.createElement("div");
-        el.className="float";
-        el.innerText=emojis[Math.floor(Math.random()*emojis.length)];
-        el.style.left=Math.random()*window.innerWidth+"px";
-        el.style.animationDuration=(3+Math.random()*5)+"s";
-        el.style.fontSize=(28+Math.random()*34)+"px";
-        document.body.appendChild(el);
-        setTimeout(()=>el.remove(),11000);
-      }
-    }
+    question.innerText = "YAY! BE READY FOR THE GREATEST BEACH SIDE NIGHT OF YOUR LIFE!";
+    yes.style.display = "none";
+    no.style.display = "none";
+    maybe.style.display = "none";
+    msg.innerText = "";
 
-    // ---- CONFETTI ----
-    const canvas=document.getElementById("confetti");
-    const ctx=canvas.getContext("2d");
-    canvas.width=window.innerWidth;
-    canvas.height=window.innerHeight;
+    // MUSIC START AT 7s
+    song.currentTime = 7;
+    song.play();
 
-    let confetti=[];
-    function startConfetti(n){
-      confetti=[];
-      for(let i=0;i<n;i++){
-        confetti.push({
-          x:Math.random()*canvas.width,
-          y:Math.random()*canvas.height*0.2,
-          r:Math.random()*4+2,
-          vx:(Math.random()-0.5)*3,
-          vy:Math.random()*3+2,
-          color:`hsl(${Math.random()*360},100%,55%)`
-        });
-      }
-      requestAnimationFrame(drawConfetti);
-    }
+    // START FOREVER EFFECTS
+    startFlowersForever();
+    startConfettiForever();
+  }
 
-    function drawConfetti(){
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-      confetti.forEach(c=>{
-        ctx.beginPath();
-        ctx.fillStyle=c.color;
-        ctx.arc(c.x,c.y,c.r,0,Math.PI*2);
-        ctx.fill();
-        c.x+=c.vx;
-        c.y+=c.vy;
+  // -------- FLOWERS FOREVER --------
+  function startFlowersForever() {
+    const emojis = ["🌷","🌸","🌹","💐","🌺","🌼","🌻","❤️"];
+
+    setInterval(() => {
+      const el = document.createElement("div");
+      el.className = "float";
+      el.innerText = emojis[Math.floor(Math.random() * emojis.length)];
+      el.style.left = Math.random() * window.innerWidth + "px";
+      el.style.animationDuration = (4 + Math.random() * 4) + "s";
+      el.style.fontSize = (30 + Math.random() * 30) + "px";
+      document.body.appendChild(el);
+      setTimeout(() => el.remove(), 12000);
+    }, 300);
+  }
+
+  // -------- CONFETTI FOREVER --------
+  const canvas = document.getElementById("confetti");
+  const ctx = canvas.getContext("2d");
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  function burstConfetti(count = 60) {
+    const parts = [];
+    for (let i = 0; i < count; i++) {
+      parts.push({
+        x: Math.random() * canvas.width,
+        y: -20,
+        r: Math.random() * 4 + 2,
+        vx: (Math.random() - 0.5) * 3,
+        vy: Math.random() * 3 + 2,
+        c: `hsl(${Math.random() * 360},100%,60%)`
       });
-      if(confetti.length>0) requestAnimationFrame(drawConfetti);
     }
-  </script>
+
+    function draw() {
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      parts.forEach(p => {
+        ctx.beginPath();
+        ctx.fillStyle = p.c;
+        ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+        ctx.fill();
+        p.x += p.vx;
+        p.y += p.vy;
+      });
+      requestAnimationFrame(draw);
+    }
+    draw();
+  }
+
+  function startConfettiForever() {
+    setInterval(() => {
+      burstConfetti(60);
+    }, 1200);
+  }
+</script>
 
 </body>
 </html>
+
